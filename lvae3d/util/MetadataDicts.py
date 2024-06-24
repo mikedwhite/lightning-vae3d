@@ -13,6 +13,7 @@ class MetadataAlpha():
                loss_func2,
                parallel,
                patch_size,
+               n_channels,
                n_epochs,
                learning_rate,
                weight_decay,
@@ -29,6 +30,7 @@ class MetadataAlpha():
         loss_func2 : torch.nn.Module
         parallel : bool
         patch_size : int
+        n_channels : int
         n_epochs : int
         learning_rate : float
         weight_decay : float
@@ -42,6 +44,7 @@ class MetadataAlpha():
                               'loss_func2': loss_func2.__class__.__name__,
                               'parallel': parallel,
                               'patch_size': patch_size,
+                              'n_channels': n_channels,
                               'n_epochs': n_epochs,
                               'initial_epoch': 0,
                               'learning_rate': learning_rate,
@@ -86,6 +89,7 @@ class MetadataBeta():
                loss_func,
                parallel,
                patch_size,
+               n_channels,
                n_epochs,
                learning_rate,
                weight_decay,
@@ -101,6 +105,7 @@ class MetadataBeta():
         loss_func : torch.nn.Module
         parallel : bool
         patch_size : int
+        n_channels : int
         n_epochs : int
         learning_rate : float
         weight_decay : float
@@ -114,6 +119,7 @@ class MetadataBeta():
                               'loss_func2': 'KLDivergence',
                               'parallel': parallel,
                               'patch_size': patch_size,
+                              'n_channels': n_channels,
                               'n_epochs': n_epochs,
                               'initial_epoch': 0,
                               'learning_rate': learning_rate,

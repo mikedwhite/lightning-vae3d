@@ -60,6 +60,7 @@ if __name__ == '__main__':
                         loss_func2=loss_func2,
                         parallel=PARALLEL,
                         patch_size=PATCH_SIZE,
+                        n_channels = N_CHANNELS,
                         n_epochs=N_EPOCHS,
                         learning_rate=LEARNING_RATE,
                         weight_decay=WEIGHT_DECAY,
