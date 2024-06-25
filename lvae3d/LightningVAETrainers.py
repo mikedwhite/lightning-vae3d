@@ -21,6 +21,7 @@ class LightningVAE_alpha(L.LightningModule):
         loss_func2 : torch.nn.Module
         """
         super().__init__()
+        self.save_hyperparameters()
         self.metadata = metadata
         if self.metadata.metadata_dict['parallel'] is True:
             self.vae = nn.DataParallel(vae)
@@ -98,6 +99,7 @@ class LightningVAE_beta(L.LightningModule):
         loss_func2 : torch.nn.Module
         """
         super().__init__()
+        self.save_hyperparameters()
         self.metadata = metadata
         if self.metadata.metadata_dict['parallel'] is True:
             self.vae = nn.DataParallel(vae)
