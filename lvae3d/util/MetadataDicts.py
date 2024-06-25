@@ -8,9 +8,10 @@ class MetadataAlpha():
         self.metadata_dict = {}
 
     def create(self,
-               vae,
+               TrainerModule,
                loss_func1,
                loss_func2,
+               alpha,
                parallel,
                patch_size,
                n_channels,
@@ -19,15 +20,15 @@ class MetadataAlpha():
                weight_decay,
                batch_size,
                latent_dim,
-               alpha,
                amsgrad):
         """Create an instance of the metadata dictionary for the alpha VAE.
 
         Parameters
         ----------
-        vae : lightning.LightningModule
+        TrainerModule : lightning.LightningModule
         loss_func1 : torch.nn.Module
         loss_func2 : torch.nn.Module
+        alpha : float
         parallel : bool
         patch_size : int
         n_channels : int
@@ -36,12 +37,12 @@ class MetadataAlpha():
         weight_decay : float
         batch_size : int
         latent_dim : int
-        alpha : float
         amsgrad : bool
         """
-        self.metadata_dict = {'vae': vae.__class__.__name__,
+        self.metadata_dict = {'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func1.__class__.__name__,
                               'loss_func2': loss_func2.__class__.__name__,
+                              'alpha': alpha,
                               'parallel': parallel,
                               'patch_size': patch_size,
                               'n_channels': n_channels,
@@ -51,7 +52,6 @@ class MetadataAlpha():
                               'weight_decay': weight_decay,
                               'batch_size': batch_size,
                               'latent_dim': latent_dim,
-                              'alpha': alpha,
                               'amsgrad': amsgrad,
                               'train_loss': [],
                               'val_loss': [],
@@ -85,8 +85,9 @@ class MetadataBeta():
         self.metadata_dict = {}
 
     def create(self,
-               vae,
+               TrainerModule,
                loss_func,
+               beta,
                parallel,
                patch_size,
                n_channels,
@@ -95,14 +96,14 @@ class MetadataBeta():
                weight_decay,
                batch_size,
                latent_dim,
-               beta,
                amsgrad):
         """Create an instance of the metadata dictionary for the beta VAE.
 
         Parameters
         ----------
-        vae : lightning.LightningModule
+        TrainerModule : lightning.LightningModule
         loss_func : torch.nn.Module
+        beta : float
         parallel : bool
         patch_size : int
         n_channels : int
@@ -111,12 +112,12 @@ class MetadataBeta():
         weight_decay : float
         batch_size : int
         latent_dim : int
-        beta : float
         amsgrad : bool
         """
-        self.metadata_dict = {'vae': vae.__class__.__name__,
+        self.metadata_dict = {'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func.__class__.__name__,
                               'loss_func2': 'KLDivergence',
+                              'beta': beta,
                               'parallel': parallel,
                               'patch_size': patch_size,
                               'n_channels': n_channels,
@@ -126,7 +127,6 @@ class MetadataBeta():
                               'weight_decay': weight_decay,
                               'batch_size': batch_size,
                               'latent_dim': latent_dim,
-                              'beta': beta,
                               'amsgrad': amsgrad,
                               'train_loss': [],
                               'val_loss': [],

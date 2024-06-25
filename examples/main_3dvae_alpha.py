@@ -11,7 +11,6 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from torchinfo import summary
 
 from lvae3d.LightningVAETrainers import ResNet18VAE_alpha
-from lvae3d.models.ResNetVAE_3D import ResNet18_3DVAE
 from lvae3d.util.DataLoaders import Dataset3D, DataModule
 from lvae3d.util.LossFunctions import SpectralLoss3D
 from lvae3d.util.MetadataDicts import MetadataAlpha
@@ -30,20 +29,20 @@ if __name__ == '__main__':
     N_CHANNELS = 3
     PARALLEL = False
     AMSGRAD = True
-    vae = ResNet18_3DVAE(LATENT_DIM, N_CHANNELS)
+    TrainerModule = ResNet18VAE_alpha
     loss_func1 = nn.BCEWithLogitsLoss()
     loss_func2 = SpectralLoss3D()
 
     # Filepaths
-    TRAIN_DIR = './data3d_norm/d3d_3d_train/'
-    VAL_DIR = './data3d_norm/d3d_3d_test/'
-    OUT_DIR = f'./out/{vae.__class__.__name__}/alphaVAE_latent{LATENT_DIM}/'
+    TRAIN_DIR = '/path/to/train/data/'
+    VAL_DIR = '/path/to/val/data/'
+    OUT_DIR = f'./out/{TrainerModule.__name__}/latent{LATENT_DIM}/'
     if not os.path.exists(OUT_DIR):
         os.makedirs(OUT_DIR)
 
     # Load checkpoint parameters
     load_model = False
-    checkpoint_path = './out/ResNet18_3DVAE/alphaVAE_latent512/checkpoint_weights_epoch10.ckpt'
+    checkpoint_path = '/path/to/checkpoint/*.ckpt'
 
     # Metadata
     metadata = MetadataAlpha()
@@ -52,9 +51,10 @@ if __name__ == '__main__':
         metadata.metadata_dict['initial_epoch'] = metadata.metadata_dict['n_epochs'] + 1
         metadata.metadata_dict['n_epochs'] += N_EPOCHS
     else:
-        metadata.create(vae=vae,
+        metadata.create(TrainerModule=TrainerModule,
                         loss_func1=loss_func1,
                         loss_func2=loss_func2,
+                        alpha=ALPHA,
                         parallel=PARALLEL,
                         patch_size=PATCH_SIZE,
                         n_channels = N_CHANNELS,
@@ -63,7 +63,6 @@ if __name__ == '__main__':
                         weight_decay=WEIGHT_DECAY,
                         batch_size=BATCH_SIZE,
                         latent_dim=LATENT_DIM,
-                        alpha=ALPHA,
                         amsgrad=AMSGRAD
                         )
 
@@ -76,20 +75,22 @@ if __name__ == '__main__':
     # Train model
     torch.set_float32_matmul_precision('medium')
     if load_model:
-        model = ResNet18VAE_alpha.load_from_checkpoint(checkpoint_path,
-                                                        metadata=metadata,
-                                                        loss_func1=loss_func1,
-                                                        loss_func2=loss_func2
-                                                        )
+        model = TrainerModule.load_from_checkpoint(checkpoint_path,
+                                                   metadata=metadata,
+                                                   loss_func1=loss_func1,
+                                                   loss_func2=loss_func2
+                                                   )
     else:
-        model = ResNet18VAE_alpha(metadata, loss_func1, loss_func2)
+        model = TrainerModule(metadata, loss_func1, loss_func2)
     summary(model, (1, 3, 64, 64, 64))
 
     checkpoint_callback = ModelCheckpoint(dirpath=OUT_DIR)
     trainer = Trainer(min_epochs=N_EPOCHS,
                       max_epochs=N_EPOCHS,
                       default_root_dir=OUT_DIR,
-                      callbacks=[checkpoint_callback]
+                      callbacks=[checkpoint_callback],
+                      fast_dev_run=True,
+                      accelerator='cpu'
                       )
     trainer.fit(model, data_module)
     trainer.save_checkpoint(filepath=f'{OUT_DIR}checkpoint_weights_epoch{N_EPOCHS}.ckpt', weights_only=True)
