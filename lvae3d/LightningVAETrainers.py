@@ -104,7 +104,7 @@ class ResNet18v2VAE_alpha(L.LightningModule):
                                                       self.metadata.metadata_dict['n_channels']))
         else:
             self.vae = ResNet18v2_3DVAE(self.metadata.metadata_dict['latent_dim'],
-                                      self.metadata.metadata_dict['n_channels'])
+                                        self.metadata.metadata_dict['n_channels'])
         self.loss_func1 = loss_func1
         self.loss_func2 = loss_func2
         self.train_loss = []
@@ -252,10 +252,10 @@ class ResNet18v2VAE_beta(L.LightningModule):
         self.metadata = metadata
         if self.metadata.metadata_dict['parallel'] is True:
             self.vae = nn.DataParallel(ResNet18v2_3DVAE(self.metadata.metadata_dict['latent_dim'],
-                                                      self.metadata.metadata_dict['n_channels']))
+                                                        self.metadata.metadata_dict['n_channels']))
         else:
             self.vae = ResNet18v2_3DVAE(self.metadata.metadata_dict['latent_dim'],
-                                      self.metadata.metadata_dict['n_channels'])
+                                        self.metadata.metadata_dict['n_channels'])
         self.loss_func = loss_func
         self.train_loss = []
         self.val_loss = []
