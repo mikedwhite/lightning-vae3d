@@ -3,18 +3,18 @@ from torch import nn
 import lightning as L
 from statistics import fmean
 
+from lvae3d.models.ResNetVAE_3D import ResNet18_3DVAE
 from lvae3d.util.LossFunctions import KLDivergence
 from lvae3d.util.LossFunctions import SpectralLoss3D
 
 
-class LightningVAE_alpha(L.LightningModule):
-    def __init__(self, vae, metadata, loss_func1=nn.BCEWithLogitsLoss(), loss_func2=SpectralLoss3D):
-        """Lightning trainer for VAE. Loss is computed as a weighted sum between two loss functions, such that
+class ResNet18VAE_alpha(L.LightningModule):
+    def __init__(self, metadata, loss_func1=nn.BCEWithLogitsLoss(), loss_func2=SpectralLoss3D):
+        """Lightning trainer for ResNet18VAE. Loss is computed as a weighted sum between two loss functions, such that
         `loss = alpha * loss_func1 + (1 - alpha) * loss_func2`.
 
         Parameters
         ----------
-        vae : lightning.LightningModule
         metadata : lvae3d.util.Metadata
             Metadata instance from the util.MetadataDicts module.
         loss_func1 : torch.nn.Module
@@ -24,14 +24,13 @@ class LightningVAE_alpha(L.LightningModule):
         self.save_hyperparameters()
         self.metadata = metadata
         if self.metadata.metadata_dict['parallel'] is True:
-            self.vae = nn.DataParallel(vae)
+            self.vae = nn.DataParallel(ResNet18_3DVAE(self.metadata.metadata_dict['letent_dim'],
+                                                      self.metadata.metadata_dict['n_channels']))
         else:
-            self.vae = vae
+            self.vae = ResNet18_3DVAE(self.metadata.metadata_dict['letent_dim'],
+                                      self.metadata.metadata_dict['n_channels'])
         self.loss_func1 = loss_func1
         self.loss_func2 = loss_func2
-        self.lr = self.metadata.metadata_dict['learning_rate']
-        self.weight_decay = self.metadata.metadata_dict['weight_decay']
-        self.alpha = self.metadata.metadata_dict['alpha']
         self.train_loss = []
         self.val_loss = []
 
@@ -44,7 +43,7 @@ class LightningVAE_alpha(L.LightningModule):
         x_hat, _, _, _ = self.vae(x)
         loss1 = self.loss_func1(x, x_hat)
         loss2 = self.loss_func2(x, x_hat)
-        loss = self.alpha * loss1 + (1 - self.alpha) * loss2
+        loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2
         self.train_loss += [loss.item()]
         if self.metadata.metadata_dict['parallel'] is True:
             self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'train_loss': loss},
@@ -63,7 +62,7 @@ class LightningVAE_alpha(L.LightningModule):
         x_hat, _, _, _ = self.vae(x)
         loss1 = self.loss_func1(x, x_hat)
         loss2 = self.loss_func2(x, x_hat)
-        loss = self.alpha * loss1 + (1 - self.alpha) * loss2
+        loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2
         self.val_loss += [loss.item()]
         if self.metadata.metadata_dict['parallel'] is True:
             self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'val_loss': loss},
@@ -78,21 +77,20 @@ class LightningVAE_alpha(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(),
-                                     lr=self.lr,
-                                     weight_decay=self.weight_decay,
+                                     lr=self.metadata.metadata_dict['learning_rate'],
+                                     weight_decay=self.metadata.metadata_dict['weight_decay'],
                                      amsgrad=self.metadata.metadata_dict['amsgrad']
                                      )
         return [optimizer]
 
 
-class LightningVAE_beta(L.LightningModule):
-    def __init__(self, vae, metadata, loss_func=nn.MSELoss()):
-        """Lightning trainer for VAE. Loss is computed as a weighted sum between two loss functions, such that
+class ResNet18VAE_beta(L.LightningModule):
+    def __init__(self, metadata, loss_func=nn.MSELoss()):
+        """Lightning trainer for ResNet18VAE. Loss is computed as a weighted sum between two loss functions, such that
         `loss = loss_func + beta * KLDivergence`.
 
         Parameters
         ----------
-        vae : lightning.LightningModule
         metadata : lvae3d.util.Metadata
             Metadata instance from the util.MetadataDicts module.
         loss_func1 : torch.nn.Module
@@ -102,13 +100,12 @@ class LightningVAE_beta(L.LightningModule):
         self.save_hyperparameters()
         self.metadata = metadata
         if self.metadata.metadata_dict['parallel'] is True:
-            self.vae = nn.DataParallel(vae)
+            self.vae = nn.DataParallel(ResNet18_3DVAE(self.metadata.metadata_dict['letent_dim'],
+                                                      self.metadata.metadata_dict['n_channels']))
         else:
-            self.vae = vae
+            self.vae = ResNet18_3DVAE(self.metadata.metadata_dict['letent_dim'],
+                                      self.metadata.metadata_dict['n_channels'])
         self.loss_func = loss_func
-        self.lr = self.metadata.metadata_dict['learning_rate']
-        self.weight_decay = self.metadata.metadata_dict['weight_decay']
-        self.beta = self.metadata.metadata_dict['beta']
         self.train_loss = []
         self.val_loss = []
 
@@ -121,7 +118,7 @@ class LightningVAE_beta(L.LightningModule):
         x_hat, mu, log_sigma, _ = self.vae(x)
         loss1 = self.loss_func(x, x_hat)
         loss2 = KLDivergence()(mu, log_sigma)
-        loss = loss1 + self.beta * loss2
+        loss = loss1 + self.metadata.metadata_dict['beta'] * loss2
         self.train_loss += [loss.item()]
         if self.metadata.metadata_dict['parallel'] is True:
             self.log_dict({'train_loss1': loss1, 'train_loss_kl': loss2, 'train_loss': loss},
@@ -140,7 +137,7 @@ class LightningVAE_beta(L.LightningModule):
         x_hat, mu, log_sigma, _ = self.vae(x)
         loss1 = self.loss_func(x, x_hat)
         loss2 = KLDivergence()(mu, log_sigma)
-        loss = loss1 + self.beta * loss2
+        loss = loss1 + self.metadata.metadata_dict['beta'] * loss2
         self.val_loss += [loss.item()]
         if self.metadata.metadata_dict['parallel'] is True:
             self.log_dict({'val_loss1': loss1, 'val_loss_kl': loss2, 'val_loss': loss},
@@ -155,8 +152,8 @@ class LightningVAE_beta(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(),
-                                     lr=self.lr,
-                                     weight_decay=self.weight_decay,
+                                     lr=self.metadata.metadata_dict['learning_rate'],
+                                     weight_decay=self.metadata.metadata_dict['weight_decay'],
                                      amsgrad=self.metadata.metadata_dict['amsgrad'],
                                      )
         return [optimizer]
