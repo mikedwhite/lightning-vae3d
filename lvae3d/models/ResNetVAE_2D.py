@@ -175,3 +175,15 @@ class ResNet18_2DVAE(L.LightningModule):
         z, mu, log_sigma = self.encoder(x)
         x_hat = self.decoder(z)
         return x_hat, mu, log_sigma, z
+
+
+class ResNet34_2DVAE(L.LightningModule):
+    def __init__(self, latent_dim=128, n_channels=3):
+        super().__init__()
+        self.encoder = Encoder([3, 4, 6, 3], latent_dim, n_channels)
+        self.decoder = Decoder([3, 4, 6, 3], latent_dim, n_channels)
+
+    def forward(self, x):
+        z, mu, log_sigma = self.encoder(x)
+        x_hat = self.decoder(z)
+        return x_hat, mu, log_sigma, z
