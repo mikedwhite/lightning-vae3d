@@ -3,17 +3,14 @@
 
 
 import os
-import yaml
-from pathlib import Path
 
 import torch
 import torch.nn as nn
 from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.loggers import WandbLogger
 from torchinfo import summary
 
-from lvae3d.LightningVAETrainers import LightningVAE_alpha
+from lvae3d.LightningVAETrainers import ResNet18VAE_alpha
 from lvae3d.models.ResNetVAE_3D import ResNet18_3DVAE
 from lvae3d.util.DataLoaders import Dataset3D, DataModule
 from lvae3d.util.LossFunctions import SpectralLoss3D
@@ -79,14 +76,13 @@ if __name__ == '__main__':
     # Train model
     torch.set_float32_matmul_precision('medium')
     if load_model:
-        model = LightningVAE_alpha.load_from_checkpoint(checkpoint_path,
-                                                        vae=vae,
+        model = ResNet18VAE_alpha.load_from_checkpoint(checkpoint_path,
                                                         metadata=metadata,
                                                         loss_func1=loss_func1,
                                                         loss_func2=loss_func2
                                                         )
     else:
-        model = LightningVAE_alpha(vae, metadata, loss_func1, loss_func2)
+        model = ResNet18VAE_alpha(metadata, loss_func1, loss_func2)
     summary(model, (1, 3, 64, 64, 64))
 
     checkpoint_callback = ModelCheckpoint(dirpath=OUT_DIR)
