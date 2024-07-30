@@ -42,7 +42,11 @@ if __name__ == '__main__':
 
     # Load checkpoint parameters
     load_model = False
-    checkpoint_path = '/path/to/checkpoint/*.ckpt'
+    checkpoint_path = '/path/to/checkpoint.ckpt'
+
+    # Torch config
+    seed_everything(42, workers=True)
+    torch.set_float32_matmul_precision('medium')
 
     # Metadata
     metadata = MetadataAlpha()
@@ -67,13 +71,11 @@ if __name__ == '__main__':
                         )
 
     # Load microstructure data
-    seed_everything(42, workers=True)
     train_dataset = Dataset3D(root_dir=TRAIN_DIR)
     val_dataset = Dataset3D(root_dir=VAL_DIR)
     data_module = DataModule(BATCH_SIZE, train_dataset, val_dataset, num_workers=8)
 
     # Train model
-    torch.set_float32_matmul_precision('medium')
     if load_model:
         model = TrainerModule.load_from_checkpoint(checkpoint_path,
                                                    metadata=metadata,
