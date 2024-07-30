@@ -1,3 +1,6 @@
+"""Contains ResNet18, ResNet18_v2, ResNet34 and ResNet34_v2 architactures."""
+
+
 import torch
 from torch import nn
 from torch import Tensor
@@ -83,7 +86,6 @@ class Encoder(L.LightningModule):
         self.res_block3 = self._make_layer(res_block, 256, layers[2])
         self.conv4 = ConvBlock(in_channels=256, out_channels=512, kernel_size=3, stride=2)
         self.res_block4 = self._make_layer(res_block, 512, layers[3])
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(512 * 4 * 4 * 4, 512)
         self.fc2 = nn.Linear(512, latent_dim)
         self.fc3 = nn.Linear(512, latent_dim)
