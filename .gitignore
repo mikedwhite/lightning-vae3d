@@ -3,3 +3,4 @@
 build/
 *__pycache__
 examples/out/
+lvae3d/models/ResNet50VAE_3D.py
