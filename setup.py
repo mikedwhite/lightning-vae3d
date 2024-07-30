@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='lightning-vae3d',
-    version='0.0.1',
+    version='0.0.2',
     author='Mike White',
     author_email='mike.white@ukaea.uk',
     description='ResNet-like variational autoencoder for encoding 3D volume elements.',
