@@ -25,6 +25,7 @@ if __name__ == '__main__':
     WEIGHT_DECAY = 1e-4
     BATCH_SIZE = 32
     LATENT_DIM = 512
+    HIDDEN_DIM = 8192
     ALPHA = 0.999
     N_CHANNELS = 3
     PARALLEL = False
@@ -67,6 +68,7 @@ if __name__ == '__main__':
                         weight_decay=WEIGHT_DECAY,
                         batch_size=BATCH_SIZE,
                         latent_dim=LATENT_DIM,
+                        hidden_dim=HIDDEN_DIM,
                         amsgrad=AMSGRAD
                         )
 

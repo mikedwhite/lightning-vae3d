@@ -20,7 +20,9 @@ class MetadataAlpha():
                weight_decay,
                batch_size,
                latent_dim,
-               amsgrad):
+               hidden_dim,
+               amsgrad
+               ):
         """Create an instance of the metadata dictionary for the alpha VAE.
 
         Parameters
@@ -37,6 +39,7 @@ class MetadataAlpha():
         weight_decay : float
         batch_size : int
         latent_dim : int
+        hidden_dim : int
         amsgrad : bool
         """
         self.metadata_dict = {'trainer': TrainerModule.__name__,
@@ -52,6 +55,7 @@ class MetadataAlpha():
                               'weight_decay': weight_decay,
                               'batch_size': batch_size,
                               'latent_dim': latent_dim,
+                              'hidden_dim': hidden_dim,
                               'amsgrad': amsgrad,
                               'train_loss': [],
                               'val_loss': [],
@@ -96,7 +100,9 @@ class MetadataBeta():
                weight_decay,
                batch_size,
                latent_dim,
-               amsgrad):
+               hidden_dim,
+               amsgrad
+               ):
         """Create an instance of the metadata dictionary for the beta VAE.
 
         Parameters
@@ -112,6 +118,7 @@ class MetadataBeta():
         weight_decay : float
         batch_size : int
         latent_dim : int
+        hidden_dim : int
         amsgrad : bool
         """
         self.metadata_dict = {'trainer': TrainerModule.__name__,
@@ -127,6 +134,7 @@ class MetadataBeta():
                               'weight_decay': weight_decay,
                               'batch_size': batch_size,
                               'latent_dim': latent_dim,
+                              'hidden_dim': hidden_dim,
                               'amsgrad': amsgrad,
                               'train_loss': [],
                               'val_loss': [],
@@ -173,7 +181,9 @@ class MetadataAlphaBeta():
                weight_decay,
                batch_size,
                latent_dim,
-               amsgrad):
+               hidden_dim,
+               amsgrad
+               ):
         """Create an instance of the metadata dictionary for the alpha VAE.
 
         Parameters
@@ -191,6 +201,7 @@ class MetadataAlphaBeta():
         weight_decay : float
         batch_size : int
         latent_dim : int
+        hidden_dim : int
         amsgrad : bool
         """
         self.metadata_dict = {'trainer': TrainerModule.__name__,
@@ -207,6 +218,7 @@ class MetadataAlphaBeta():
                               'weight_decay': weight_decay,
                               'batch_size': batch_size,
                               'latent_dim': latent_dim,
+                              'hidden_dim': hidden_dim,
                               'amsgrad': amsgrad,
                               'train_loss': [],
                               'val_loss': [],
