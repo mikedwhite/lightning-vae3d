@@ -4,6 +4,8 @@ from torch.fft import fftn, fftshift
 
 import math
 
+from lvae3d.util.Mappings import euler_distance
+
 
 class KLDivergence(nn.Module):
     def __init__(self):
@@ -89,26 +91,6 @@ class SpectralLoss3D(nn.Module):
         loss = (1 / (n_pixels * n_images)) * \
                 (((fft_x.imag - fft_x_hat.imag) ** 2).sum() + ((fft_x.real - fft_x_hat.real) ** 2).sum())
         return loss
-
-
-def euler_distance(a, b):
-    """Compute the element-wise distance between two 2D tensors of Euler angles, `a` and `b`. `a` and `b` must have the
-    same shape.
-
-    Parameters
-    ----------
-    a : torch.Tensor
-        Tensor of Euler angles.
-    b : torch.Tensor
-        Tensor of Euler angles.
-
-    Returns
-    -------
-    distance : torch.Tensor
-        Tensor containing the element-wise distance between `a` and `b`.
-    """
-    distance = torch.minimum(torch.abs(a - b), 2 * torch.Tensor([math.pi]).type_as(a) - torch.abs(a - b))
-    return distance
 
 
 class EulerLoss2D(nn.Module):
