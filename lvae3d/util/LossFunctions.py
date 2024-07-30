@@ -27,7 +27,7 @@ class KLDivergence(nn.Module):
             KL divergence.
         """
 
-        loss = (mu ** 2 + torch.exp(log_sigma) ** 2 - log_sigma - 0.5).sum()
+        loss = -0.5 * torch.sum(1 + log_sigma - mu.pow(2) - log_sigma.exp())
         return loss
 
 
