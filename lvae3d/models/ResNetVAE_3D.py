@@ -89,7 +89,6 @@ class Encoder(L.LightningModule):
         self.fc1 = nn.Linear(512 * 4 * 4 * 4, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, latent_dim)
         self.fc3 = nn.Linear(hidden_dim, latent_dim)
-        self.fc4 = nn.Linear(latent_dim, latent_dim)
         self.N = torch.normal(size=(1, latent_dim), mean=0.0, std=1.0)
 
         # Initialise weights
@@ -125,8 +124,7 @@ class Encoder(L.LightningModule):
         x = torch.tanh(self.fc1(x))
         mu = self.fc2(x)
         log_sigma = self.fc3(x)
-        z = mu + torch.exp(log_sigma) * self.N.type_as(mu)
-        z = self.fc4(z)
+        z = mu + torch.exp(0.5 * log_sigma) * self.N.type_as(mu)
 
         return z, mu, log_sigma
 
