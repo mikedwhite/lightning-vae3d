@@ -78,6 +78,7 @@ class ResNetBlock_v2(L.LightningModule):
 class Encoder(L.LightningModule):
     def __init__(self, layers, latent_dim, in_channels, hidden_dim, res_block=ResNetBlock):
         super().__init__()
+        self.latent_dim = latent_dim
         self.conv1 = ConvBlock(in_channels, out_channels=64, kernel_size=7, stride=2, padding=3)
         self.res_block1 = self._make_layer(res_block, 64, layers[0])
         self.conv2 = ConvBlock(in_channels=64, out_channels=128, kernel_size=3, stride=2)
@@ -89,7 +90,6 @@ class Encoder(L.LightningModule):
         self.fc1 = nn.Linear(512 * 4 * 4 * 4, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, latent_dim)
         self.fc3 = nn.Linear(hidden_dim, latent_dim)
-        self.N = torch.normal(size=(1, latent_dim), mean=0.0, std=1.0)
 
         # Initialise weights
         for m in self.modules():
@@ -124,7 +124,8 @@ class Encoder(L.LightningModule):
         x = torch.tanh(self.fc1(x))
         mu = self.fc2(x)
         log_sigma = self.fc3(x)
-        z = mu + torch.exp(0.5 * log_sigma) * self.N.type_as(mu)
+        N = torch.normal(size=(1, self.latent_dim), mean=0.0, std=1.0)
+        z = mu + torch.exp(0.5 * log_sigma) * N.type_as(mu)
 
         return z, mu, log_sigma
 
