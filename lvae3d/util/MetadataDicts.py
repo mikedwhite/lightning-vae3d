@@ -8,6 +8,7 @@ class MetadataAlpha():
         self.metadata_dict = {}
 
     def create(self,
+               vae,
                TrainerModule,
                loss_func1,
                loss_func2,
@@ -27,6 +28,7 @@ class MetadataAlpha():
 
         Parameters
         ----------
+        vae : lightning.LightningModule
         TrainerModule : lightning.LightningModule
         loss_func1 : torch.nn.Module
         loss_func2 : torch.nn.Module
@@ -42,7 +44,8 @@ class MetadataAlpha():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'trainer': TrainerModule.__name__,
+        self.metadata_dict = {'vae': vae.__class__.__name__,
+                              'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func1.__class__.__name__,
                               'loss_func2': loss_func2.__class__.__name__,
                               'alpha': alpha,
@@ -89,6 +92,7 @@ class MetadataBeta():
         self.metadata_dict = {}
 
     def create(self,
+               vae,
                TrainerModule,
                loss_func,
                beta,
@@ -107,6 +111,7 @@ class MetadataBeta():
 
         Parameters
         ----------
+        vae : lightning.LightningModule
         TrainerModule : lightning.LightningModule
         loss_func : torch.nn.Module
         beta : float
@@ -121,7 +126,8 @@ class MetadataBeta():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'trainer': TrainerModule.__name__,
+        self.metadata_dict = {'vae': vae.__class__.__name__,
+                              'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func.__class__.__name__,
                               'loss_func2': 'KLDivergence',
                               'beta': beta,
@@ -168,6 +174,7 @@ class MetadataAlphaBeta():
         self.metadata_dict = {}
 
     def create(self,
+               vae,
                TrainerModule,
                loss_func1,
                loss_func2,
@@ -188,6 +195,7 @@ class MetadataAlphaBeta():
 
         Parameters
         ----------
+        vae : lightning.LightningModule
         TrainerModule : lightning.LightningModule
         loss_func1 : torch.nn.Module
         loss_func2 : torch.nn.Module
@@ -204,7 +212,8 @@ class MetadataAlphaBeta():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'trainer': TrainerModule.__name__,
+        self.metadata_dict = {'vae': vae.__class__.__name__,
+                              'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func1.__class__.__name__,
                               'loss_func2': loss_func2.__class__.__name__,
                               'alpha': alpha,
