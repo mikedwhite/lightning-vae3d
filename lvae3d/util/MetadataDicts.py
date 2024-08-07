@@ -44,7 +44,7 @@ class MetadataAlpha():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'vae': vae.__class__.__name__,
+        self.metadata_dict = {'vae': vae.__name__,
                               'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func1.__class__.__name__,
                               'loss_func2': loss_func2.__class__.__name__,
@@ -126,7 +126,7 @@ class MetadataBeta():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'vae': vae.__class__.__name__,
+        self.metadata_dict = {'vae': vae.__name__,
                               'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func.__class__.__name__,
                               'loss_func2': 'KLDivergence',
@@ -212,7 +212,7 @@ class MetadataAlphaBeta():
         hidden_dim : int
         amsgrad : bool
         """
-        self.metadata_dict = {'vae': vae.__class__.__name__,
+        self.metadata_dict = {'vae': vae.__name__,
                               'trainer': TrainerModule.__name__,
                               'loss_func1': loss_func1.__class__.__name__,
                               'loss_func2': loss_func2.__class__.__name__,
