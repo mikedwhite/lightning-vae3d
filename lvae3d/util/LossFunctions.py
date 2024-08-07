@@ -180,12 +180,9 @@ class QuaternionLoss2D(nn.Module):
         loss : torch.Tensor
             Quaternion loss between the input and the reconstruction.
         """
-
         q, q_hat = euler2quaternion2d(x), euler2quaternion2d(x_hat)
-
         theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1) / 2))
         loss = torch.linalg.norm(torch.flatten(theta), ord=2)
-
         return loss
 
 
@@ -210,15 +207,7 @@ class QuaternionLoss3D(nn.Module):
         loss : torch.Tensor
             Quaternion loss between the input and the reconstruction.
         """
-
-        print(torch.min(x), torch.max(x))
-        print(torch.min(x_hat), torch.max(x_hat))
         q, q_hat = euler2quaternion3d(x), euler2quaternion3d(x_hat)
-        print(q.shape)
-
         theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1)) / 2)
-        # print(theta)
         loss = torch.linalg.norm(torch.flatten(theta), ord=2)
-        print(loss)
-
         return loss

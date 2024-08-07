@@ -3,8 +3,7 @@ from torch import nn
 import lightning as L
 from statistics import fmean
 
-from lvae3d.util.LossFunctions import KLDivergence
-from lvae3d.util.LossFunctions import SpectralLoss3D
+from lvae3d.util.LossFunctions import KLDivergence, SpectralLoss3D
 
 
 class VAETrainerAlpha(L.LightningModule):
