@@ -4,7 +4,7 @@ import math
 
 
 def euler_distance(a, b):
-    """Compute the element-wise distance between two 2D tensors of Euler angles, `a` and `b`. `a` and `b` must have the
+    """Compute the element-wise distance between two tensors of Euler angles, `a` and `b`. `a` and `b` must have the
     same shape.
 
     Parameters

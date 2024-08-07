@@ -4,7 +4,7 @@ from torch.fft import fftn, fftshift
 
 import math
 
-from lvae3d.util.Mappings import euler_distance
+from lvae3d.util.Mappings import euler_distance, euler2quaternion2d, euler2quaternion3d
 
 
 class KLDivergence(nn.Module):
@@ -122,8 +122,8 @@ class EulerLoss2D(nn.Module):
         distance = torch.sqrt(euler_distance(alpha1, alpha2) ** 2 + \
                               euler_distance(beta1, beta2) ** 2 + \
                               euler_distance(gamma1, gamma2) ** 2)
-        mean_distance = torch.linalg.vector_norm(torch.flatten(distance))
-        return mean_distance
+        loss = torch.linalg.vector_norm(torch.flatten(distance))
+        return loss
 
 
 class EulerLoss3D(nn.Module):
@@ -155,5 +155,70 @@ class EulerLoss3D(nn.Module):
         distance = torch.sqrt(euler_distance(alpha1, alpha2) ** 2 + \
                               euler_distance(beta1, beta2) ** 2 + \
                               euler_distance(gamma1, gamma2) ** 2)
-        mean_distance = torch.linalg.vector_norm(torch.flatten(distance))
-        return mean_distance
+        loss = torch.linalg.vector_norm(torch.flatten(distance))
+        return loss
+
+
+class QuaternionLoss2D(nn.Module):
+    def __init__(self):
+        super(QuaternionLoss2D, self).__init__()
+
+    def forward(self, x, x_hat):
+        """Rotational distance from 'Q-RBSA: high-resolution 3D EBSD map generation using an efficient quaternion
+        transformer network', D. K. Jangit et al.
+        Operates on a 2D volume element.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Quaternion loss between the input and the reconstruction.
+        """
+
+        q, q_hat = euler2quaternion2d(x), euler2quaternion2d(x_hat)
+
+        theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1) / 2))
+        loss = torch.linalg.norm(torch.flatten(theta), ord=2)
+
+        return loss
+
+
+class QuaternionLoss3D(nn.Module):
+    def __init__(self):
+        super(QuaternionLoss3D, self).__init__()
+
+    def forward(self, x, x_hat):
+        """Rotational distance from 'Q-RBSA: high-resolution 3D EBSD map generation using an efficient quaternion
+        transformer network', D. K. Jangit et al.
+        Operates on a 3D volume element.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Quaternion loss between the input and the reconstruction.
+        """
+
+        print(torch.min(x), torch.max(x))
+        print(torch.min(x_hat), torch.max(x_hat))
+        q, q_hat = euler2quaternion3d(x), euler2quaternion3d(x_hat)
+        print(q.shape)
+
+        theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1)) / 2)
+        # print(theta)
+        loss = torch.linalg.norm(torch.flatten(theta), ord=2)
+        print(loss)
+
+        return loss
