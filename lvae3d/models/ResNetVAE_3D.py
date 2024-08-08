@@ -187,6 +187,30 @@ class Decoder(L.LightningModule):
         return x
 
 
+class ResNet12_3DVAE(L.LightningModule):
+    def __init__(self, latent_dim=128, n_channels=3, hidden_dim=8192):
+        super().__init__()
+        self.encoder = Encoder([1, 1, 1, 1], latent_dim, n_channels, hidden_dim, ResNetBlock)
+        self.decoder = Decoder([1, 1, 1, 1], latent_dim, n_channels, hidden_dim, ResNetBlock)
+
+    def forward(self, x):
+        z, mu, log_sigma = self.encoder(x)
+        x_hat = self.decoder(z)
+        return x_hat, mu, log_sigma, z
+
+
+class ResNet12v2_3DVAE(L.LightningModule):
+    def __init__(self, latent_dim=128, n_channels=3, hidden_dim=8192):
+        super().__init__()
+        self.encoder = Encoder([1, 1, 1, 1], latent_dim, n_channels, hidden_dim, ResNetBlock_v2)
+        self.decoder = Decoder([1, 1, 1, 1], latent_dim, n_channels, hidden_dim, ResNetBlock_v2)
+
+    def forward(self, x):
+        z, mu, log_sigma = self.encoder(x)
+        x_hat = self.decoder(z)
+        return x_hat, mu, log_sigma, z
+
+
 class ResNet18_3DVAE(L.LightningModule):
     def __init__(self, latent_dim=128, n_channels=3, hidden_dim=8192):
         super().__init__()
