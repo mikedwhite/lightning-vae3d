@@ -86,7 +86,7 @@ class SpectralLoss3D(nn.Module):
             Spectral loss between the input and the reconstruction.
         """
         n_images = x.shape[0]
-        n_pixels = x.shape[-2] * x.shape[-1]
+        n_pixels = x.shape[-3] * x.shape[-2] * x.shape[-1]
         fft_x, fft_x_hat = fftshift(fftn(x, dim=(-3, -2, -1))), fftshift(fftn(x_hat, dim=(-3, -2, -1)))
         loss = (1 / (n_pixels * n_images)) * \
                 (((fft_x.imag - fft_x_hat.imag) ** 2).sum() + ((fft_x.real - fft_x_hat.real) ** 2).sum())
