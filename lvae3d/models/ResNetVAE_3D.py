@@ -146,6 +146,7 @@ class Decoder(L.LightningModule):
         self.conv4 = ConvTransposeBlock(in_channels=64, out_channels=n_channels, kernel_size=4, stride=2)
         self.res_block4 = self._make_layer(res_block, 3, layers[3])
         self.conv5 = nn.ConvTranspose3d(n_channels, n_channels, kernel_size=3, stride=1, padding=1)
+        self.sigmoid = nn.Sigmoid()
 
         # Initialise weights
         for m in self.modules():
@@ -182,7 +183,7 @@ class Decoder(L.LightningModule):
         x = self.conv4(x)
         x = self.res_block4(x)
         x = self.conv5(x)
-        x = nn.Sigmoid(x)
+        x = self.sigmoid(x)
 
         return x
 
