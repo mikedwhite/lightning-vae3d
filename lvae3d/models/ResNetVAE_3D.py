@@ -182,7 +182,7 @@ class Decoder(L.LightningModule):
         x = self.conv4(x)
         x = self.res_block4(x)
         x = self.conv5(x)
-        x = torch.sigmoid(x)
+        x = nn.Sigmoid(x)
 
         return x
 
