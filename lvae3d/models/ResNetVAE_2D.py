@@ -56,6 +56,7 @@ class ResNetBlock(L.LightningModule):
 class Encoder(L.LightningModule):
     def __init__(self, layers, latent_dim, in_channels, hidden_dim):
         super().__init__()
+        self.latent_dim = latent_dim
         self.conv1 = ConvBlock(in_channels, out_channels=64, kernel_size=7, stride=2, padding=3)
         self.res_block1 = self._make_layer(ResNetBlock, 64, layers[0])
         self.conv2 = ConvBlock(in_channels=64, out_channels=128, kernel_size=3, stride=2)
@@ -167,10 +168,10 @@ class Decoder(L.LightningModule):
 
 
 class ResNet18_2DVAE(L.LightningModule):
-    def __init__(self, latent_dim=128, n_channels=3):
+    def __init__(self, latent_dim=128, n_channels=3, hidden_dim=8192):
         super().__init__()
-        self.encoder = Encoder([2, 2, 2, 2], latent_dim, n_channels)
-        self.decoder = Decoder([2, 2, 2, 2], latent_dim, n_channels)
+        self.encoder = Encoder([2, 2, 2, 2], latent_dim, n_channels, hidden_dim)
+        self.decoder = Decoder([2, 2, 2, 2], latent_dim, n_channels, hidden_dim)
 
     def forward(self, x):
         z, mu, log_sigma = self.encoder(x)
@@ -179,10 +180,10 @@ class ResNet18_2DVAE(L.LightningModule):
 
 
 class ResNet34_2DVAE(L.LightningModule):
-    def __init__(self, latent_dim=128, n_channels=3):
+    def __init__(self, latent_dim=128, n_channels=3, hidden_dim=8192):
         super().__init__()
-        self.encoder = Encoder([3, 4, 6, 3], latent_dim, n_channels)
-        self.decoder = Decoder([3, 4, 6, 3], latent_dim, n_channels)
+        self.encoder = Encoder([3, 4, 6, 3], latent_dim, n_channels, hidden_dim)
+        self.decoder = Decoder([3, 4, 6, 3], latent_dim, n_channels, hidden_dim)
 
     def forward(self, x):
         z, mu, log_sigma = self.encoder(x)
