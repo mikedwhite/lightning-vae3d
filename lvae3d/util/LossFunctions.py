@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
 from torch.fft import fftn, fftshift
+import damask
 
 import math
 
-from lvae3d.util.Mappings import euler_distance, euler2quaternion2d, euler2quaternion3d
+from lvae3d.util.Mappings import euler_distance, eu2qu2d, eu2qu3d
 
 
 class KLDivergence(nn.Module):
@@ -180,7 +181,7 @@ class QuaternionLoss2D(nn.Module):
         loss : torch.Tensor
             Quaternion loss between the input and the reconstruction.
         """
-        q, q_hat = euler2quaternion2d(x), euler2quaternion2d(x_hat)
+        q, q_hat = eu2qu2d(x), eu2qu2d(x_hat)
         theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1) / 2))
         loss = torch.linalg.norm(torch.flatten(theta), ord=2)
         return loss
@@ -207,7 +208,49 @@ class QuaternionLoss3D(nn.Module):
         loss : torch.Tensor
             Quaternion loss between the input and the reconstruction.
         """
-        q, q_hat = euler2quaternion3d(x), euler2quaternion3d(x_hat)
+        q, q_hat = eu2qu3d(x), eu2qu3d(x_hat)
         theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1)) / 2)
         loss = torch.linalg.norm(torch.flatten(theta), ord=2)
+        return loss
+
+
+class EulerMisorientation3D(nn.Module):
+    def __init__(self):
+        super(EulerMisorientation3D, self).__init__()
+
+    def forward(self, x, x_hat):
+        eu, eu_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
+        eu = torch.reshape(eu, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
+        eu_hat = torch.reshape(eu_hat, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
+
+        misorientation = torch.zeros(eu.shape[0])
+        for n in range(eu.shape[0]):
+            g = torch.zeros((3, 3))
+            g_hat = torch.zeros((3, 3))
+
+            g[0, 0] = torch.cos(eu[n, 0]) * torch.cos(eu[n, 2]) - torch.sin(eu[n, 0]) * torch.sin(eu[n, 2]) * torch.cos(eu[n, 1])
+            g[0, 1] = torch.sin(eu[n, 0]) * torch.cos(eu[n, 2]) + torch.cos(eu[n, 0]) * torch.sin(eu[n, 2]) * torch.cos(eu[n, 1])
+            g[0, 2] = torch.sin(eu[n, 2]) * torch.sin(eu[n, 1])
+            g[1, 0] = -torch.cos(eu[n, 0]) * torch.sin(eu[n, 2]) - torch.sin(eu[n, 0]) * torch.cos(eu[n, 2]) * torch.cos(eu[n, 1])
+            g[1, 1] = -torch.sin(eu[n, 0]) * torch.sin(eu[n, 2]) + torch.cos(eu[n, 0]) * torch.cos(eu[n, 2]) * torch.cos(eu[n, 1])
+            g[1, 2] = torch.cos(eu[n, 2]) * torch.sin(eu[n, 1])
+            g[2, 0] = torch.sin(eu[n, 0]) * torch.sin(eu[n, 1])
+            g[2, 1] = -torch.cos(eu[n, 0]) * torch.sin(eu[n, 1])
+            g[2, 2] = torch.cos(eu[n, 1])
+
+            g_hat[0, 0] = torch.cos(eu_hat[n, 0]) * torch.cos(eu_hat[n, 2]) - torch.sin(eu_hat[n, 0]) * torch.sin(eu_hat[n, 2]) * torch.cos(eu_hat[n, 1])
+            g_hat[0, 1] = torch.sin(eu_hat[n, 0]) * torch.cos(eu_hat[n, 2]) + torch.cos(eu_hat[n, 0]) * torch.sin(eu_hat[n, 2]) * torch.cos(eu_hat[n, 1])
+            g_hat[0, 2] = torch.sin(eu_hat[n, 2]) * torch.sin(eu_hat[n, 1])
+            g_hat[1, 0] = -torch.cos(eu_hat[n, 0]) * torch.sin(eu_hat[n, 2]) - torch.sin(eu_hat[n, 0]) * torch.cos(eu_hat[n, 2]) * torch.cos(eu_hat[n, 1])
+            g_hat[1, 1] = -torch.sin(eu_hat[n, 0]) * torch.sin(eu_hat[n, 2]) + torch.cos(eu_hat[n, 0]) * torch.cos(eu_hat[n, 2]) * torch.cos(eu_hat[n, 1])
+            g_hat[1, 2] = torch.cos(eu_hat[n, 2]) * torch.sin(eu_hat[n, 1])
+            g_hat[2, 0] = torch.sin(eu_hat[n, 0]) * torch.sin(eu_hat[n, 1])
+            g_hat[2, 1] = -torch.cos(eu_hat[n, 0]) * torch.sin(eu_hat[n, 1])
+            g_hat[2, 2] = torch.cos(eu_hat[n, 1])
+
+            g_diff = g_hat * torch.linalg.inv(g)
+            misorientation[n] = torch.acos(0.5 * (g_diff[0, 0] + g_diff[1, 1] + g_diff[2, 2] - 1)) ** 2
+
+        loss = torch.mean(misorientation)
+
         return loss
