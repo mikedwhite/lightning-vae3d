@@ -92,6 +92,6 @@ def eu2qu3d(eu):
     qu[:, 2, :, :, :] = -_P * s * torch.sin(delta)
     qu[:, 3, :, :, :] = -_P * c * torch.sin(sigma)
 
-    qu[:, :, torch.squeeze(qu[:, 0, :, :, :] < 0)] *= -1
+    qu[:, :, torch.squeeze(qu[:, 0, :, :, :] < 0.0)] *= -1
 
     return qu

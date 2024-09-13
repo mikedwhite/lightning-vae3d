@@ -94,123 +94,72 @@ class SpectralLoss3D(nn.Module):
         return loss
 
 
-class EulerLoss2D(nn.Module):
+class QuaternionMisorientation3D(nn.Module):
     def __init__(self):
-        super(EulerLoss2D, self).__init__()
+        super(QuaternionMisorientation3D, self).__init__()
 
     def forward(self, x, x_hat):
-        """Uses phi_1 in 'Metrics for 3D Rotations: Comparison and Analysis', Du Q. Huynh.
-        Operates on 2D slices of a volume element.
+        """Computes the mean squared error of minimum misorientation between symmetric equivalents of quaternions.
+        Operates on a batch of 3D tensors of normalised Euler angles.
 
         Parameters
         ----------
         x : torch.Tensor
-            Input image.
+            Input tensor.
         x_hat : torch.Tensor
             Reconstruction.
 
         Returns
         -------
         loss : torch.Tensor
-            Euler loss between the input and the reconstruction.
+            Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
         """
-        alpha1 = math.pi * (x[:, 0, :, :] - 1)
-        alpha2 = math.pi * (x_hat[:, 0, :, :] - 1)
-        beta1 = math.pi * (x[:, 1, :, :] - 1) * 0.5
-        beta2 = math.pi * (x_hat[:, 1, :, :] - 1) * 0.5
-        gamma1 = math.pi * (x[:, 2, :, :] - 1)
-        gamma2 = math.pi * (x_hat[:, 2, :, :] - 1)
-        distance = torch.sqrt(euler_distance(alpha1, alpha2) ** 2 + \
-                              euler_distance(beta1, beta2) ** 2 + \
-                              euler_distance(gamma1, gamma2) ** 2)
-        loss = torch.linalg.vector_norm(torch.flatten(distance))
-        return loss
+        symmetry_ops = torch.tensor(([[ 1.0,                             0.0,                             0.0,                             0.0                             ],
+                                      [ 0.0,                             1.0,                             0.0,                             0.0                             ],
+                                      [ 0.0,                             0.0,                             1.0,                             0.0                             ],
+                                      [ 0.0,                             0.0,                             0.0,                             1.0                             ],
+                                      [ 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [ 0.0,                            -0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [ 0.5,                             0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                             0.5,                            -0.5                             ],
+                                      [-0.5,                             0.5,                            -0.5,                             0.5                             ],
+                                      [-0.5,                            -0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                            -0.5,                             0.5,                            -0.5                             ],
+                                      [-0.5,                            -0.5,                            -0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                            -0.5,                            -0.5                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
+                                      ]))
 
-
-class EulerLoss3D(nn.Module):
-    def __init__(self):
-        super(EulerLoss3D, self).__init__()
-
-    def forward(self, x, x_hat):
-        """Uses phi_1 in 'Metrics for 3D Rotations: Comparison and Analysis', Du Q. Huynh.
-        Operates on a 3D volume element.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input image.
-        x_hat : torch.Tensor
-            Reconstruction.
-
-        Returns
-        -------
-        loss : torch.Tensor
-            Euler loss between the input and the reconstruction.
-        """
-        alpha1 = math.pi * (x[:, 0, :, :, :] - 1)
-        alpha2 = math.pi * (x_hat[:, 0, :, :, :] - 1)
-        beta1 = math.pi * (x[:, 1, :, :, :] - 1) * 0.5
-        beta2 = math.pi * (x_hat[:, 1, :, :, :] - 1) * 0.5
-        gamma1 = math.pi * (x[:, 2, :, :, :] - 1)
-        gamma2 = math.pi * (x_hat[:, 2, :, :, :] - 1)
-        distance = torch.sqrt(euler_distance(alpha1, alpha2) ** 2 + \
-                              euler_distance(beta1, beta2) ** 2 + \
-                              euler_distance(gamma1, gamma2) ** 2)
-        loss = torch.linalg.vector_norm(torch.flatten(distance))
-        return loss
-
-
-class QuaternionLoss2D(nn.Module):
-    def __init__(self):
-        super(QuaternionLoss2D, self).__init__()
-
-    def forward(self, x, x_hat):
-        """Rotational distance from 'Q-RBSA: high-resolution 3D EBSD map generation using an efficient quaternion
-        transformer network', D. K. Jangit et al.
-        Operates on a 2D volume element.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input image.
-        x_hat : torch.Tensor
-            Reconstruction.
-
-        Returns
-        -------
-        loss : torch.Tensor
-            Quaternion loss between the input and the reconstruction.
-        """
-        q, q_hat = eu2qu2d(x), eu2qu2d(x_hat)
-        theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1) / 2))
-        loss = torch.linalg.norm(torch.flatten(theta), ord=2)
-        return loss
-
-
-class QuaternionLoss3D(nn.Module):
-    def __init__(self):
-        super(QuaternionLoss3D, self).__init__()
-
-    def forward(self, x, x_hat):
-        """Rotational distance from 'Q-RBSA: high-resolution 3D EBSD map generation using an efficient quaternion
-        transformer network', D. K. Jangit et al.
-        Operates on a 3D volume element.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input image.
-        x_hat : torch.Tensor
-            Reconstruction.
-
-        Returns
-        -------
-        loss : torch.Tensor
-            Quaternion loss between the input and the reconstruction.
-        """
         q, q_hat = eu2qu3d(x), eu2qu3d(x_hat)
-        theta = 4 * torch.asin(torch.sqrt(torch.sum(torch.mul(q - q_hat, q - q_hat), axis=1)) / 2)
-        loss = torch.linalg.norm(torch.flatten(theta), ord=2)
+        q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
+        q = torch.reshape(q, (4, -1))
+        q = torch.transpose(q, 0, 1)
+        q_hat = torch.reshape(q_hat, (4, -1))
+        q_hat = torch.transpose(q_hat, 0, 1)
+
+        misorientation_temp = torch.zeros(symmetry_ops.shape[0])
+        misorientation = torch.zeros(q.shape[0])
+        for n in range(q_hat.shape[0]):
+            for m in range(misorientation_temp.shape[0]):
+                q_hat_sym = q_hat[n, :] * symmetry_ops[m]
+                if q_hat[n, 0] < 0:
+                    q_hat_sym = -q_hat_sym
+                misorientation_temp[m] = torch.acos(torch.abs(torch.dot(q[n, :], q_hat_sym)))
+                # print(misorientation_temp[m])
+            misorientation[n] = torch.min(misorientation_temp) ** 2
+
+        loss = torch.mean(misorientation)
+
         return loss
 
 
@@ -225,7 +174,7 @@ class EulerMisorientation(nn.Module):
         Parameters
         ----------
         x : torch.Tensor
-            Input image.
+            Input tensor.
         x_hat : torch.Tensor
             Reconstruction.
 
@@ -235,8 +184,10 @@ class EulerMisorientation(nn.Module):
             Mean squared error of Euler angle misorientation between the input and the reconstruction.
         """
         eu, eu_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
-        eu = torch.reshape(eu, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
-        eu_hat = torch.reshape(eu_hat, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
+        eu = torch.reshape(eu, (3, -1))
+        eu = torch.transpose(eu, 0, 1) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi])).type_as(eu)
+        eu_hat = torch.reshape(eu_hat, (3, -1))
+        eu_hat = torch.transpose(eu_hat, 0, 1) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi])).type_as(eu_hat)
 
         misorientation = torch.zeros(eu.shape[0])
         for n in range(eu.shape[0]):
