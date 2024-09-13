@@ -214,11 +214,26 @@ class QuaternionLoss3D(nn.Module):
         return loss
 
 
-class EulerMisorientation3D(nn.Module):
+class EulerMisorientation(nn.Module):
     def __init__(self):
-        super(EulerMisorientation3D, self).__init__()
+        super(EulerMisorientation, self).__init__()
 
     def forward(self, x, x_hat):
+        """Computes the mean squared error of misorientation between Euler angles.
+        Operates on a batch of tensors of normalised Euler angles. Can be 3D or 2D.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Mean squared error of Euler angle misorientation between the input and the reconstruction.
+        """
         eu, eu_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
         eu = torch.reshape(eu, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
         eu_hat = torch.reshape(eu_hat, (-1, 3)) * torch.tensor(([2.0 * math.pi, math.pi, 2.0 * math.pi]))
