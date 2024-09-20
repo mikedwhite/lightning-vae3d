@@ -10,7 +10,7 @@ from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.callbacks import ModelCheckpoint
 from torchinfo import summary
 
-from lvae3d.models.ResNetVAE_3D import ResNet18_3DVAE
+from lvae3d.models.ResNetVAE_3Deu import ResNet18_3DVAEeu
 from lvae3d.LightningVAETrainers import VAETrainerAlpha
 from lvae3d.util.DataLoaders import Dataset3D, DataModule
 from lvae3d.util.LossFunctions import SpectralLoss3D
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     N_CHANNELS = 3
     PARALLEL = False
     AMSGRAD = True
-    vae = ResNet18_3DVAE
+    vae = ResNet18_3DVAEeu
     TrainerModule = VAETrainerAlpha
     loss_func1 = nn.BCEWithLogitsLoss()
     loss_func2 = SpectralLoss3D()
