@@ -143,22 +143,26 @@ class QuaternionMisorientation3D(nn.Module):
         q, q_hat = eu2qu3d(x), eu2qu3d(x_hat)
         q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
         q = torch.reshape(q, (4, -1))
-        q = torch.transpose(q, 0, 1)
         q_hat = torch.reshape(q_hat, (4, -1))
-        q_hat = torch.transpose(q_hat, 0, 1)
 
-        misorientation_temp = torch.zeros(symmetry_ops.shape[0])
-        misorientation = torch.zeros(q.shape[0])
-        for n in range(q_hat.shape[0]):
-            for m in range(misorientation_temp.shape[0]):
-                q_hat_sym = q_hat[n, :] * symmetry_ops[m]
-                if q_hat[n, 0] < 0:
-                    q_hat_sym = -q_hat_sym
-                misorientation_temp[m] = torch.acos(torch.abs(torch.dot(q[n, :], q_hat_sym)))
-                # print(misorientation_temp[m])
-            misorientation[n] = torch.min(misorientation_temp) ** 2
+        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1])
+        for n, sym in enumerate(symmetry_ops):
+            q_syms[n, 0, :] = q[0, :]*sym[0] - q[1, :]*sym[1] - q[2, :]*sym[2] - q[3, :]*sym[3]
+            q_syms[n, 1, :] = q[0, :]*sym[1] + q[1, :]*sym[0] - q[2, :]*sym[3] + q[3, :]*sym[2]
+            q_syms[n, 2, :] = q[0, :]*sym[2] + q[2, :]*sym[0] - q[3, :]*sym[1] + q[1, :]*sym[3]
+            q_syms[n, 3, :] = q[0, :]*sym[3] + q[3, :]*sym[0] - q[1, :]*sym[2] + q[2, :]*sym[1]
 
-        loss = torch.mean(misorientation)
+        args = torch.argwhere(q_syms[:, 0, :] < 0.0)  # check if this is needed (symmetric variants should stay in northern hemisphere)
+        q_syms[args[:, 0], :, args[:, 1]] *= -1
+
+        for n in range(q_syms.shape[0]):
+            if n == 0:
+                min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+            else:
+                temp_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                min_misorientation = torch.where(temp_misorientation < min_misorientation, temp_misorientation, min_misorientation)
+
+        loss = torch.sum(torch.mul(min_misorientation, min_misorientation)) / min_misorientation.shape[0]
 
         return loss
 
