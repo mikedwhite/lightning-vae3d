@@ -96,7 +96,7 @@ class SpectralLoss3D(nn.Module):
 
 class QuaternionMisorientation3Dqu(nn.Module):
     def __init__(self):
-        super(QuaternionMisorientation3Deu, self).__init__()
+        super(QuaternionMisorientation3Dqu, self).__init__()
 
     def forward(self, x, x_hat):
         """Computes the mean squared error of minimum misorientation between symmetric equivalents of quaternions.
