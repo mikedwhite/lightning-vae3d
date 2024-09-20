@@ -145,7 +145,7 @@ class Decoder(L.LightningModule):
         self.conv3 = ConvTransposeBlock(in_channels=128, out_channels=64, kernel_size=4, stride=2)
         self.res_block3 = self._make_layer(res_block, 64, layers[2])
         self.conv4 = ConvTransposeBlock(in_channels=64, out_channels=n_channels, kernel_size=4, stride=2)
-        self.res_block4 = self._make_layer(res_block, 3, layers[3])
+        self.res_block4 = self._make_layer(res_block, n_channels, layers[3])
         self.conv5 = nn.ConvTranspose3d(n_channels, n_channels, kernel_size=3, stride=1, padding=1)
         self.sigmoid = nn.Sigmoid()
 
