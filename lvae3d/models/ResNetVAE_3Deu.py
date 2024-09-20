@@ -1,4 +1,5 @@
-"""Contains ResNet18, ResNet18_v2, ResNet34 and ResNet34_v2 architactures."""
+"""Contains ResNet18, ResNet18_v2, ResNet34 and ResNet34_v2 architactures.
+Operates on tensors of 3-channel Euler angles."""
 
 
 import torch
@@ -76,10 +77,10 @@ class ResNetBlock_v2(L.LightningModule):
 
 
 class Encoder(L.LightningModule):
-    def __init__(self, layers, latent_dim, in_channels, hidden_dim, res_block=ResNetBlock):
+    def __init__(self, layers, latent_dim, n_channels, hidden_dim, res_block=ResNetBlock):
         super().__init__()
         self.latent_dim = latent_dim
-        self.conv1 = ConvBlock(in_channels, out_channels=64, kernel_size=7, stride=2, padding=3)
+        self.conv1 = ConvBlock(n_channels, out_channels=64, kernel_size=7, stride=2, padding=3)
         self.res_block1 = self._make_layer(res_block, 64, layers[0])
         self.conv2 = ConvBlock(in_channels=64, out_channels=128, kernel_size=3, stride=2)
         self.res_block2 = self._make_layer(res_block, 128, layers[1])

@@ -94,9 +94,81 @@ class SpectralLoss3D(nn.Module):
         return loss
 
 
-class QuaternionMisorientation3D(nn.Module):
+class QuaternionMisorientation3Dqu(nn.Module):
     def __init__(self):
-        super(QuaternionMisorientation3D, self).__init__()
+        super(QuaternionMisorientation3Deu, self).__init__()
+
+    def forward(self, x, x_hat):
+        """Computes the mean squared error of minimum misorientation between symmetric equivalents of quaternions.
+        Operates on a batch of 3D tensors of normalised quaternions.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
+        """
+        symmetry_ops = torch.tensor(([[ 1.0,                             0.0,                             0.0,                             0.0                             ],
+                                      [ 0.0,                             1.0,                             0.0,                             0.0                             ],
+                                      [ 0.0,                             0.0,                             1.0,                             0.0                             ],
+                                      [ 0.0,                             0.0,                             0.0,                             1.0                             ],
+                                      [ 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.0,                             0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [ 0.0,                            -0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [ 0.5,                             0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                             0.5,                            -0.5                             ],
+                                      [-0.5,                             0.5,                            -0.5,                             0.5                             ],
+                                      [-0.5,                            -0.5,                             0.5,                             0.5                             ],
+                                      [-0.5,                            -0.5,                             0.5,                            -0.5                             ],
+                                      [-0.5,                            -0.5,                            -0.5,                             0.5                             ],
+                                      [-0.5,                             0.5,                            -0.5,                            -0.5                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [ 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0,                             0.5*torch.sqrt(torch.tensor(2)) ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
+                                      [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
+                                      ]))
+
+        q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
+        q = torch.reshape(q, (4, -1))
+        q_hat = torch.reshape(q_hat, (4, -1))
+
+        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1])
+        for n, sym in enumerate(symmetry_ops):
+            q_syms[n, 0, :] = q[0, :]*sym[0] - q[1, :]*sym[1] - q[2, :]*sym[2] - q[3, :]*sym[3]
+            q_syms[n, 1, :] = q[0, :]*sym[1] + q[1, :]*sym[0] - q[2, :]*sym[3] + q[3, :]*sym[2]
+            q_syms[n, 2, :] = q[0, :]*sym[2] + q[2, :]*sym[0] - q[3, :]*sym[1] + q[1, :]*sym[3]
+            q_syms[n, 3, :] = q[0, :]*sym[3] + q[3, :]*sym[0] - q[1, :]*sym[2] + q[2, :]*sym[1]
+
+        args = torch.argwhere(q_syms[:, 0, :] < 0.0)  # check if this is needed (symmetric variants should stay in northern hemisphere)
+        q_syms[args[:, 0], :, args[:, 1]] *= -1
+
+        for n in range(q_syms.shape[0]):
+            if n == 0:
+                min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+            else:
+                temp_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                min_misorientation = torch.where(temp_misorientation < min_misorientation, temp_misorientation, min_misorientation)
+
+        loss = torch.sum(torch.mul(min_misorientation, min_misorientation)) / min_misorientation.shape[0]
+
+        return loss
+
+
+class QuaternionMisorientation3Deu(nn.Module):
+    def __init__(self):
+        super(QuaternionMisorientation3Deu, self).__init__()
 
     def forward(self, x, x_hat):
         """Computes the mean squared error of minimum misorientation between symmetric equivalents of quaternions.
