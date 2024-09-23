@@ -58,7 +58,7 @@ class SpectralLoss2D(nn.Module):
         n_images = x.shape[0]
         n_pixels = x.shape[-2] * x.shape[-1]
         fft_x, fft_x_hat = fftshift(fftn(x, dim=(-2, -1))), fftshift(fftn(x_hat, dim=(-2, -1)))
-        loss = torch.mul(torch.div(1, torch.mul(n_voxels, n_images)),
+        loss = torch.mul(torch.div(1, torch.mul(n_pixels, n_images)),
                          torch.sum((fft_x.imag - fft_x_hat.imag) ** 2) + torch.sum((fft_x.real - fft_x_hat.real) ** 2))
         return loss
 
