@@ -144,7 +144,7 @@ class QuaternionMisorientation3Dqu(nn.Module):
         q = torch.reshape(q, (4, -1))
         q_hat = torch.reshape(q_hat, (4, -1))
 
-        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1])
+        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1]).type_as(q)
         for n, sym in enumerate(symmetry_ops):
             q_syms[n, 0, :] = q[0, :]*sym[0] - q[1, :]*sym[1] - q[2, :]*sym[2] - q[3, :]*sym[3]
             q_syms[n, 1, :] = q[0, :]*sym[1] + q[1, :]*sym[0] - q[2, :]*sym[3] + q[3, :]*sym[2]
@@ -212,12 +212,12 @@ class QuaternionMisorientation3Deu(nn.Module):
                                       [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
                                       ])).type_as(x)
 
-        q, q_hat = eu2qu3d(x), eu2qu3d(x_hat)
+        q, q_hat = eu2qu3d(x).type_as(x), eu2qu3d(x_hat).type_as(x_hat)
         q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
         q = torch.reshape(q, (4, -1))
         q_hat = torch.reshape(q_hat, (4, -1))
 
-        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1])
+        q_syms = torch.empty(symmetry_ops.shape[0], q.shape[0], q.shape[1]).type_as(q)
         for n, sym in enumerate(symmetry_ops):
             q_syms[n, 0, :] = q[0, :]*sym[0] - q[1, :]*sym[1] - q[2, :]*sym[2] - q[3, :]*sym[3]
             q_syms[n, 1, :] = q[0, :]*sym[1] + q[1, :]*sym[0] - q[2, :]*sym[3] + q[3, :]*sym[2]
