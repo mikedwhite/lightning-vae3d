@@ -147,7 +147,6 @@ class Decoder(L.LightningModule):
         self.conv4 = ConvTransposeBlock(in_channels=64, out_channels=n_channels, kernel_size=4, stride=2)
         self.res_block4 = self._make_layer(res_block, n_channels, layers[3])
         self.conv5 = nn.ConvTranspose3d(n_channels, n_channels, kernel_size=3, stride=1, padding=1)
-        self.softmax = nn.Softmax(dim=1)
 
         # Initialise weights
         for m in self.modules():
@@ -184,8 +183,9 @@ class Decoder(L.LightningModule):
         x = self.conv4(x)
         x = self.res_block4(x)
         x = self.conv5(x)
-        x = self.softmax(x)
-        x = torch.sqrt(x)
+        x_len = torch.sqrt(torch.sum(torch.mul(x, x), dim=1, keepdim=True))
+        x_len = torch.where(x_len == 0, x_len, 1e-6)
+        x = torch.div(x, torch.cat((x_len, x_len, x_len, x_len), dim=1))
 
         return x
 
