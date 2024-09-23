@@ -48,12 +48,7 @@ class VAETrainerAlpha(L.LightningModule):
         loss2 = self.loss_func2(x, x_hat)
         loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2
         self.train_loss += [loss.item()]
-        if self.metadata.metadata_dict['parallel'] is True:
-            self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'train_loss': loss},
-                          on_epoch=True, on_step=False, sync_dist=True)
-        else:
-            self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'train_loss': loss},
-                          on_epoch=True, on_step=False)
+        self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'train_loss': loss}, on_epoch=True, on_step=False)
         return loss
 
     def on_train_epoch_end(self):
@@ -67,12 +62,7 @@ class VAETrainerAlpha(L.LightningModule):
         loss2 = self.loss_func2(x, x_hat)
         loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2
         self.val_loss += [loss.item()]
-        if self.metadata.metadata_dict['parallel'] is True:
-            self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'val_loss': loss},
-                          on_epoch=True, on_step=False, sync_dist=True)
-        else:
-            self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'val_loss': loss},
-                          on_epoch=True, on_step=False)
+        self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'val_loss': loss}, on_epoch=True, on_step=False)
 
     def on_validation_epoch_end(self):
         self.metadata.metadata_dict['val_loss'] += [fmean(self.val_loss)]
@@ -127,12 +117,7 @@ class VAETrainerBeta(L.LightningModule):
         loss2 = KLDivergence()(mu, log_sigma)
         loss = loss1 + self.metadata.metadata_dict['beta'] * loss2
         self.train_loss += [loss.item()]
-        if self.metadata.metadata_dict['parallel'] is True:
-            self.log_dict({'train_loss1': loss1, 'train_loss_kl': loss2, 'train_loss': loss},
-                          on_epoch=True, on_step=False, sync_dist=True)
-        else:
-            self.log_dict({'train_loss1': loss1, 'train_loss_kl': loss2, 'train_loss': loss},
-                          on_epoch=True, on_step=False)
+        self.log_dict({'train_loss1': loss1, 'train_loss_kl': loss2, 'train_loss': loss}, on_epoch=True, on_step=False)
         return loss
 
     def on_train_epoch_end(self):
@@ -208,12 +193,7 @@ class VAETrainerAlphaBeta(L.LightningModule):
         loss3 = KLDivergence()(mu, log_sigma)
         loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2 + self.metadata.metadata_dict['beta'] * loss3
         self.train_loss += [loss.item()]
-        if self.metadata.metadata_dict['parallel'] is True:
-            self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'kl_div':loss3, 'train_loss': loss},
-                          on_epoch=True, on_step=False, sync_dist=True)
-        else:
-            self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'kl_div':loss3, 'train_loss': loss},
-                          on_epoch=True, on_step=False)
+        self.log_dict({'train_loss1': loss1, 'train_loss2': loss2, 'kl_div':loss3, 'train_loss': loss}, on_epoch=True, on_step=False)
         return loss
 
     def on_train_epoch_end(self):
@@ -228,12 +208,7 @@ class VAETrainerAlphaBeta(L.LightningModule):
         loss3 = KLDivergence()(mu, log_sigma)
         loss = self.metadata.metadata_dict['alpha'] * loss1 + (1 - self.metadata.metadata_dict['alpha']) * loss2 + self.metadata.metadata_dict['beta'] * loss3
         self.val_loss += [loss.item()]
-        if self.metadata.metadata_dict['parallel'] is True:
-            self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'kl_div':loss3, 'val_loss': loss},
-                          on_epoch=True, on_step=False, sync_dist=True)
-        else:
-            self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'kl_div':loss3, 'val_loss': loss},
-                          on_epoch=True, on_step=False)
+        self.log_dict({'val_loss1': loss1, 'val_loss2': loss2, 'kl_div':loss3, 'val_loss': loss}, on_epoch=True, on_step=False)
 
     def on_validation_epoch_end(self):
         self.metadata.metadata_dict['val_loss'] += [fmean(self.val_loss)]
