@@ -183,9 +183,14 @@ class Decoder(L.LightningModule):
         x = self.conv4(x)
         x = self.res_block4(x)
         x = self.conv5(x)
+        print(x[:, :, 0, 0, 0])
         x_len = torch.sqrt(torch.sum(torch.mul(x, x), dim=1, keepdim=True))
-        x_len = torch.where(x_len == 0, x_len, 1e-6)
+        print(x_len.shape)
+        x_len = torch.where(x_len == 0.0, 1e-6, x_len)
         x = torch.div(x, torch.cat((x_len, x_len, x_len, x_len), dim=1))
+        print(x.shape)
+        print(x[:, :, 0, 0, 0])
+        print(x[0, 0, 0, 0, 0]**2 + x[0, 1, 0, 0, 0]**2 + x[0, 2, 0, 0, 0]**2 + x[0, 3, 0, 0, 0]**2)
 
         return x
 
