@@ -58,8 +58,8 @@ class SpectralLoss2D(nn.Module):
         n_images = x.shape[0]
         n_pixels = x.shape[-2] * x.shape[-1]
         fft_x, fft_x_hat = fftshift(fftn(x, dim=(-2, -1))), fftshift(fftn(x_hat, dim=(-2, -1)))
-        loss = (1 / (n_pixels * n_images)) * \
-                (((fft_x.imag - fft_x_hat.imag) ** 2).sum() + ((fft_x.real - fft_x_hat.real) ** 2).sum())
+        loss = torch.mul(torch.div(1, torch.mul(n_voxels, n_images)),
+                         torch.sum((fft_x.imag - fft_x_hat.imag) ** 2) + torch.sum((fft_x.real - fft_x_hat.real) ** 2))
         return loss
 
 
@@ -87,10 +87,10 @@ class SpectralLoss3D(nn.Module):
             Spectral loss between the input and the reconstruction.
         """
         n_images = x.shape[0]
-        n_pixels = x.shape[-3] * x.shape[-2] * x.shape[-1]
+        n_voxels = x.shape[-3] * x.shape[-2] * x.shape[-1]
         fft_x, fft_x_hat = fftshift(fftn(x, dim=(-3, -2, -1))), fftshift(fftn(x_hat, dim=(-3, -2, -1)))
-        loss = (1 / (n_pixels * n_images)) * \
-                (((fft_x.imag - fft_x_hat.imag) ** 2).sum() + ((fft_x.real - fft_x_hat.real) ** 2).sum())
+        loss = torch.mul(torch.div(1, torch.mul(n_voxels, n_images)),
+                         torch.sum((fft_x.imag - fft_x_hat.imag) ** 2) + torch.sum((fft_x.real - fft_x_hat.real) ** 2))
         return loss
 
 
@@ -138,7 +138,7 @@ class QuaternionMisorientation3Dqu(nn.Module):
                                       [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
                                       [-0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
                                       [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
-                                      ]))
+                                      ])).type_as(x)
 
         q, q_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
         q = torch.reshape(q, (4, -1))
@@ -210,7 +210,7 @@ class QuaternionMisorientation3Deu(nn.Module):
                                       [-0.5*torch.sqrt(torch.tensor(2)), 0.0,                            -0.5*torch.sqrt(torch.tensor(2)), 0.0                             ],
                                       [-0.5*torch.sqrt(torch.tensor(2)), 0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
                                       [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
-                                      ]))
+                                      ])).type_as(x)
 
         q, q_hat = eu2qu3d(x), eu2qu3d(x_hat)
         q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
