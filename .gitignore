@@ -2,6 +2,7 @@
 *.egg-info
 build/
 *__pycache__
-examples/data/
+examples/data_eu/
+examples/data_qu/
 examples/out/
 lvae3d/models/ResNet50VAE_3D.py
