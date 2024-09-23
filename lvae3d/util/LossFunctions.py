@@ -140,7 +140,7 @@ class QuaternionMisorientation3Dqu(nn.Module):
                                       [-0.5*torch.sqrt(torch.tensor(2)),-0.5*torch.sqrt(torch.tensor(2)), 0.0,                             0.0                             ],
                                       ]))
 
-        q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
+        q, q_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
         q = torch.reshape(q, (4, -1))
         q_hat = torch.reshape(q_hat, (4, -1))
 
