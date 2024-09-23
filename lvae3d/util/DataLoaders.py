@@ -22,7 +22,7 @@ class Dataset3D(Dataset):
             idx = idx.tolist()
 
         filename = self.filenames[idx]
-        rve = torch.load(filename)
+        rve = torch.load(filename, weights_only=True)
         sample = {'filename': os.path.basename(filename),
                   'image': rve}
 
