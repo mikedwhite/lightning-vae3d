@@ -185,7 +185,7 @@ class Decoder(L.LightningModule):
         x = self.conv5(x)
         x_len = torch.sqrt(torch.sum(torch.mul(x, x), dim=1, keepdim=True))
         x_len = torch.where(x_len == 0.0, 1e-6, x_len)
-        x = torch.div(x, torch.cat((x_len, x_len, x_len, x_len), dim=1))
+        x = torch.div(x, x_len.repeat(1, 4, 1, 1, 1))
 
         return x
 
