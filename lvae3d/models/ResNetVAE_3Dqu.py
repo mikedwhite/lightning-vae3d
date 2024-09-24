@@ -92,14 +92,6 @@ class Encoder(L.LightningModule):
         self.fc2 = nn.Linear(hidden_dim, latent_dim)
         self.fc3 = nn.Linear(hidden_dim, latent_dim)
 
-        # Initialise weights
-        for m in self.modules():
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
-            elif isinstance(m, (nn.BatchNorm3d, nn.GroupNorm)):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-
     def _make_layer(self, block, n_channels, n_layers):
         layers = []
         layers.append(
@@ -147,14 +139,6 @@ class Decoder(L.LightningModule):
         self.conv4 = ConvTransposeBlock(in_channels=64, out_channels=n_channels, kernel_size=4, stride=2)
         self.res_block4 = self._make_layer(res_block, n_channels, layers[3])
         self.conv5 = nn.ConvTranspose3d(n_channels, n_channels, kernel_size=3, stride=1, padding=1)
-
-        # Initialise weights
-        for m in self.modules():
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
-            elif isinstance(m, (nn.BatchNorm3d, nn.GroupNorm)):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, n_channels, n_layers):
         layers = []
