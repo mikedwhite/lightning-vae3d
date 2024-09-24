@@ -259,8 +259,10 @@ class QuaternionMisorientation3Deu(nn.Module):
             q_syms[n, 2, :] = q[0, :]*sym[2] + q[2, :]*sym[0] - q[3, :]*sym[1] + q[1, :]*sym[3]
             q_syms[n, 3, :] = q[0, :]*sym[3] + q[3, :]*sym[0] - q[1, :]*sym[2] + q[2, :]*sym[1]
 
-        args = torch.argwhere(q_syms[:, 0, :] < 0.0)  # check if this is needed (symmetric variants should stay in northern hemisphere)
+        args = torch.argwhere(q_syms[:, 0, :] < 0.0)
         q_syms[args[:, 0], :, args[:, 1]] *= -1
+        args = torch.argwhere(q_hat[0, :] < 0.0)
+        q_hat[:, args] *= -1
 
         for n in range(q_syms.shape[0]):
             if n == 0:
