@@ -99,8 +99,41 @@ class QuaternionMisorientation3Dqu(nn.Module):
         super(QuaternionMisorientation3Dqu, self).__init__()
 
     def forward(self, x, x_hat):
-        """Computes the mean squared error of minimum misorientation between symmetric equivalents of quaternions.
-        Operates on a batch of 3D tensors of normalised quaternions.
+        """Computes the mean squared error of minimum misorientation between unit quaternions.
+        Operates on a batch of 3D tensors of unit quaternions.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
+        """
+        q, q_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
+        q = torch.reshape(q, (4, -1))
+        q_hat = torch.reshape(q_hat, (4, -1))
+
+        args = torch.argwhere(q_hat[0, :] < 0.0)
+        q_hat[:, args] *= -1
+        min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))))
+
+        loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
+
+        return loss
+
+
+class QuaternionMisorientation3Dqu_syms(nn.Module):
+    def __init__(self):
+        super(QuaternionMisorientation3Dqu_syms, self).__init__()
+
+    def forward(self, x, x_hat):
+        """Computes the mean squared error of minimum misorientation between symmetric equivalents of unit quaternions.
+        Operates on a batch of 3D tensors of unit quaternions.
 
         Parameters
         ----------
@@ -151,8 +184,10 @@ class QuaternionMisorientation3Dqu(nn.Module):
             q_syms[n, 2, :] = q[0, :]*sym[2] + q[2, :]*sym[0] - q[3, :]*sym[1] + q[1, :]*sym[3]
             q_syms[n, 3, :] = q[0, :]*sym[3] + q[3, :]*sym[0] - q[1, :]*sym[2] + q[2, :]*sym[1]
 
-        args = torch.argwhere(q_syms[:, 0, :] < 0.0)  # check if this is needed (symmetric variants should stay in northern hemisphere)
+        args = torch.argwhere(q_syms[:, 0, :] < 0.0)
         q_syms[args[:, 0], :, args[:, 1]] *= -1
+        args = torch.argwhere(q_hat[0, :] < 0.0)
+        q_hat[:, args] *= -1
 
         for n in range(q_syms.shape[0]):
             if n == 0:
@@ -161,7 +196,7 @@ class QuaternionMisorientation3Dqu(nn.Module):
                 temp_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
                 min_misorientation = torch.where(temp_misorientation < min_misorientation, temp_misorientation, min_misorientation)
 
-        loss = torch.sum(torch.mul(min_misorientation, min_misorientation)) / min_misorientation.shape[0]
+        loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
 
         return loss
 
