@@ -120,7 +120,7 @@ class QuaternionMisorientation3Dqu(nn.Module):
 
         args = torch.argwhere(q_hat[0, :] < 0.0)
         q_hat[:, args] *= -1
-        min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))))
+        min_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
 
         loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
 
@@ -191,9 +191,9 @@ class QuaternionMisorientation3Dqu_syms(nn.Module):
 
         for n in range(q_syms.shape[0]):
             if n == 0:
-                min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                min_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
             else:
-                temp_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                temp_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
                 min_misorientation = torch.where(temp_misorientation < min_misorientation, temp_misorientation, min_misorientation)
 
         loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
@@ -266,9 +266,9 @@ class QuaternionMisorientation3Deu(nn.Module):
 
         for n in range(q_syms.shape[0]):
             if n == 0:
-                min_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                min_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
             else:
-                temp_misorientation = torch.abs(torch.acos(torch.abs(torch.sum(torch.mul(q_hat, q_syms[n, :, :]), axis=0))))
+                temp_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
                 min_misorientation = torch.where(temp_misorientation < min_misorientation, temp_misorientation, min_misorientation)
 
         loss = torch.sum(torch.mul(min_misorientation, min_misorientation)) / min_misorientation.shape[0]
