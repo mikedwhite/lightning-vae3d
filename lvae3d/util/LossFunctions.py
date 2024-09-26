@@ -118,8 +118,6 @@ class QuaternionMisorientation3Dqu(nn.Module):
         q = torch.reshape(q, (4, -1))
         q_hat = torch.reshape(q_hat, (4, -1))
 
-        args = torch.argwhere(q_hat[0, :] < 0.0)
-        q_hat[:, args] *= -1
         min_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
 
         loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
@@ -186,8 +184,6 @@ class QuaternionMisorientation3Dqu_syms(nn.Module):
 
         args = torch.argwhere(q_syms[:, 0, :] < 0.0)
         q_syms[args[:, 0], :, args[:, 1]] *= -1
-        args = torch.argwhere(q_hat[0, :] < 0.0)
-        q_hat[:, args] *= -1
 
         for n in range(q_syms.shape[0]):
             if n == 0:

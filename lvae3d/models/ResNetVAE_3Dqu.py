@@ -153,6 +153,7 @@ class Decoder(L.LightningModule):
         return nn.Sequential(*layers)
 
     def forward(self, x: Tensor) -> Tensor:
+        batch_size = x.shape[0]
         x = self.fc1(x)
         x = self.relu(x)
         x = self.fc2(x)
@@ -170,6 +171,11 @@ class Decoder(L.LightningModule):
         x_len = torch.sqrt(torch.sum(torch.mul(x, x), dim=1, keepdim=True))
         x_len = torch.where(x_len < 1e-5, 1e-5, x_len)
         x = torch.div(x, x_len.repeat(1, 4, 1, 1, 1))
+        x = torch.moveaxis(x, 0, 1)
+        x = torch.reshape(x, (4, -1))
+        x[:, torch.argwhere(x[0, :] < 0.0)] *= -1
+        x = torch.reshape(x, (4, batch_size, 64, 64, 64))
+        x = torch.moveaxis(x, 1, 0)
 
         return x
 
