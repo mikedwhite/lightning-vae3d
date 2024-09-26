@@ -221,6 +221,40 @@ class QuaternionMisorientation3Deu(nn.Module):
         loss : torch.Tensor
             Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
         """
+        q, q_hat = eu2qu3d(x).type_as(x), eu2qu3d(x_hat).type_as(x_hat)
+        q, q_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
+        q = torch.reshape(q, (4, -1))
+        q_hat = torch.reshape(q_hat, (4, -1))
+
+        args = torch.argwhere(q_hat[0, :] < 0.0)
+        q_hat[:, args] *= -1
+        min_misorientation = 1 - torch.abs(torch.sum(torch.mul(q, q_hat), axis=0))
+
+        loss = torch.div(torch.sum(torch.mul(min_misorientation, min_misorientation)), q.shape[1])
+
+        return loss
+
+
+class QuaternionMisorientation3Deu_syms(nn.Module):
+    def __init__(self):
+        super(QuaternionMisorientation3Deu_syms, self).__init__()
+
+    def forward(self, x, x_hat):
+        """Computes the mean squared error of minimum misorientation between quaternions.
+        Operates on a batch of 3D tensors of normalised Euler angles.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor.
+        x_hat : torch.Tensor
+            Reconstruction.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
+        """
         symmetry_ops = torch.tensor(([[ 1.0,                             0.0,                             0.0,                             0.0                             ],
                                       [ 0.0,                             1.0,                             0.0,                             0.0                             ],
                                       [ 0.0,                             0.0,                             1.0,                             0.0                             ],
