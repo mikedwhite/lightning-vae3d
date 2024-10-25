@@ -39,7 +39,7 @@ class SpectralLoss2D(nn.Module):
     def forward(self, x, x_hat):
         r"""Computes the mean squared error between the 2D Fourier transforms of the input image, :math:`x`, and the
         corresponding reconstruction, :math:`\hat{x}`.
-        Must be applied to image tensors with shape (`n_images`, `h`, `w`, `c`), where `n_images` is the number of
+        Must be applied to image tensors with shape (`n_images`, `c`, `h`, `w`), where `n_images` is the number of
         images in the batch, `h` and `w` are the height and width of the image, respectively, and `c` is the number of
         channels in the image.
 
@@ -70,7 +70,7 @@ class SpectralLoss3D(nn.Module):
     def forward(self, x, x_hat):
         r"""Computes the mean squared error between the 3D Fourier transforms of the input image, :math:`x`, and the
         corresponding reconstruction, :math:`\hat{x}`.
-        Must be applied to image tensors with shape (`n_images`, `h`, `w`, `d`, `c`), where `n_images` is the number of
+        Must be applied to image tensors with shape (`n_images`, `c`, `h`, `w`, `d`), where `n_images` is the number of
         images in the batch, `h`, `w` and `d` are the height, width and depth of the image, respectively, and `c` is the
         number of channels in the image.
 
@@ -218,7 +218,7 @@ class QuaternionMisorientation3Deu(nn.Module):
             Mean squared error of minimum quaternion misorientation between the input and the reconstruction.
         """
         q, q_hat = eu2qu3d(x).type_as(x), eu2qu3d(x_hat).type_as(x_hat)
-        q, q_hat = torch.moveaxis(x, 0, -1), torch.moveaxis(x_hat, 0, -1)
+        q, q_hat = torch.moveaxis(q, 0, -1), torch.moveaxis(q_hat, 0, -1)
         q = torch.reshape(q, (4, -1))
         q_hat = torch.reshape(q_hat, (4, -1))
 
