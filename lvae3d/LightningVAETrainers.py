@@ -23,12 +23,14 @@ class VAETrainerAlpha(L.LightningModule):
         self.metadata = metadata
         # TODO: add error checking for vae and loss functions input compared to metadata entries
         if self.metadata.metadata_dict['parallel'] is True:
-            self.vae = nn.DataParallel(vae(self.metadata.metadata_dict['latent_dim'],
+            self.vae = nn.DataParallel(vae(self.metadata.metadata_dict['patch_size'],
+                                           self.metadata.metadata_dict['latent_dim'],
                                            self.metadata.metadata_dict['n_channels'],
                                            self.metadata.metadata_dict['hidden_dim']
                                            ))
         else:
-            self.vae = vae(self.metadata.metadata_dict['latent_dim'],
+            self.vae = vae(self.metadata.metadata_dict['patch_size'],
+                           self.metadata.metadata_dict['latent_dim'],
                            self.metadata.metadata_dict['n_channels'],
                            self.metadata.metadata_dict['hidden_dim']
                            )
